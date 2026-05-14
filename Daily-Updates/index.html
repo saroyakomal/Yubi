@@ -44,7 +44,7 @@
 <h2>This Week — 2026-05-08 to 2026-05-14</h2>
 
 <div class="summary">
-  <strong>Headline:</strong> MF Phase 1 UX structure fully locked end-to-end (Explore, Orders, Portfolio, STP, SWP, Mandate). Investor &amp; Distributor KYC step lists drafted for unified KYC. FD engagement review delivered. Personal Yubi workspace stood up on GitHub Pages so all specs are shareable via stable URLs.
+  <strong>Headline:</strong> MF Phase 1 UX structure fully locked end-to-end (Explore, Orders, Portfolio, STP, SWP, Mandate). Investor &amp; Distributor KYC step lists drafted for unified KYC. Agreement &amp; Invoice demo reviewed with tech team — 2 feedback points raised, being incorporated. FD engagement review delivered. Personal Yubi workspace stood up on GitHub Pages so all specs are shareable via stable URLs.
 </div>
 
 <h3>Workstream progress</h3>
@@ -109,6 +109,15 @@
     <li><strong>Systematic Plan + Mandate (unified):</strong> Single hierarchical table — parent row = plan (SIP/STP/SWP), expandable child = Mandate Debit History (one row per debit attempt, 13 columns: Date, UMRN, Scheme, Linked plan, Status, Amount, Bank, Account masked, Max amount, Frequency, Start/End, Auth mode, Failure reason). Mandate is no longer a separate tab.</li>
     <li><strong>Setup STP:</strong> Primary entry from Holdings; secondary shortcut from Orders. Dedicated full page. Source folio locked, target scheme picker, transfer plan, tax disclosure, review &amp; submit. Status lifecycle Draft → Active → [Paused] → Completed/Stopped.</li>
     <li><strong>Setup SWP:</strong> Primary entry from Holdings; secondary from Orders. No mandate row (outflow to investor's bank, not a debit). On execution, AMC redeems and credits investor's KYC bank T+2/T+3.</li>
+  </ul>
+</div>
+
+<div class="entry entry-ops">
+  <h4><span class="tag tag-ops">Demo</span> Agreement &amp; Invoice — walkthrough with tech team</h4>
+  <p>Took the demo of the in-progress Agreement and Invoice flows. Two feedback points raised; tech team is incorporating both:</p>
+  <ul>
+    <li><strong>Open exploration before activation:</strong> distributor should be able to explore the entire website without functional capabilities being enabled (i.e., browse before signing the agreement; transactional actions stay gated until activation).</li>
+    <li><strong>Agreement email post-signing:</strong> after the distributor signs in / completes signing, the executed agreement should be emailed to them automatically.</li>
   </ul>
 </div>
 
