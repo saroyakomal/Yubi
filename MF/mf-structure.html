@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>YMPL Mutual Funds — UX Structure (Phase 1)</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 1100px; margin: 40px auto; padding: 0 24px; color: #172B4D; line-height: 1.55; }
+  h1 { color: #0052CC; border-bottom: 2px solid #0052CC; padding-bottom: 8px; }
+  h2 { color: #0747A6; margin-top: 36px; border-bottom: 1px solid #DFE1E6; padding-bottom: 6px; }
+  h3 { color: #253858; margin-top: 24px; }
+  h4 { color: #344563; margin-top: 18px; margin-bottom: 6px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th, td { border: 1px solid #DFE1E6; padding: 10px 12px; text-align: left; vertical-align: top; }
+  th { background: #F4F5F7; font-weight: 600; }
+  tr:nth-child(even) td { background: #FAFBFC; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 12px; font-weight: 600; }
+  .pill-locked { background: #36B37E; color: #fff; }
+  .pill-deferred { background: #6554C0; color: #fff; }
+  .pill-out { background: #97A0AF; color: #fff; }
+  code { background: #F4F5F7; padding: 1px 6px; border-radius: 3px; font-size: 13px; }
+  .section { background: #F4F5F7; padding: 16px 20px; border-left: 4px solid #0052CC; margin: 20px 0; border-radius: 3px; }
+  .note { background: #FFFAE6; border-left: 4px solid #FF991F; padding: 12px 16px; margin: 16px 0; border-radius: 3px; }
+  .info { background: #DEEBFF; border-left: 4px solid #0052CC; padding: 12px 16px; margin: 16px 0; border-radius: 3px; }
+  .ok { background: #E3FCEF; border-left: 4px solid #36B37E; padding: 12px 16px; margin: 16px 0; border-radius: 3px; }
+  ul { margin: 6px 0; }
+  ol { margin: 6px 0; }
+  .indent { padding-left: 18px; }
+  .grain { font-size: 13px; color: #5E6C84; font-style: italic; }
+</style>
+</head>
+<body>
+
+<h1>YMPL Mutual Funds — UX Structure (Phase 1)</h1>
+
+<div class="section">
+  <strong>Scope:</strong> In-house Mutual Funds module for YMPL distributor app. Replaces the current Investwell SSO redirect.<br/>
+  <strong>Audience:</strong> Designer, frontend &amp; backend developers.<br/>
+  <strong>Parity reference:</strong> Existing Fixed Deposits module — distributor-facing, client-selection-based. MF should feel identical in tab labels, navigation, and flow patterns.
+</div>
+
+<h2>Phase 1 Decisions</h2>
+<table>
+  <tr><th>Decision</th><th>Status</th></tr>
+  <tr><td>Commission to distributor</td><td><span class="pill pill-out">Out of scope (Phase 1)</span></td></tr>
+  <tr><td>Investor fee for transactions</td><td><span class="pill pill-locked">Free for investor</span></td></tr>
+  <tr><td>SIP modification</td><td><span class="pill pill-locked">Full edit (amount, frequency, stop, pause)</span></td></tr>
+  <tr><td>Redemption</td><td><span class="pill pill-locked">Distributor-initiated only</span></td></tr>
+</table>
+
+<h2>Top-level Navigation</h2>
+<table>
+  <tr><th>Tab</th><th>Status</th><th>Purpose</th></tr>
+  <tr><td>Home</td><td><span class="pill pill-deferred">Deferred (Phase 2+)</span></td><td>MF tab lands directly on Explore in Phase 1</td></tr>
+  <tr><td>Explore</td><td><span class="pill pill-locked">Locked</span></td><td>Fund discovery and shortlisting</td></tr>
+  <tr><td>Orders</td><td><span class="pill pill-locked">Locked</span></td><td>Transaction list across all clients</td></tr>
+  <tr><td>Portfolio</td><td><span class="pill pill-locked">Locked</span></td><td>Holdings, Systematic Plans (with nested mandate debit history), and AUM summary — viewable at investor-profile level</td></tr>
+</table>
+<p class="grain">Portfolio is reached two ways: (a) as a top-level tab showing the cross-client aggregated view, and (b) inside Investor Profile (opened from Client page by clicking the investor's name) showing the same structure scoped to that one investor.</p>
+
+<hr/>
+
+<h2>1. Explore Tab — List Content</h2>
+<div class="ok"><strong>Locked.</strong> Explore renders as a <strong>list/table</strong> (not card grid) — list allows more parameters per row, in line with Groww/Zerodha Coin/Kuvera/ET Money/BSE Star MF conventions.</div>
+
+<h4>List columns</h4>
+<table>
+  <tr><th>#</th><th>Column</th><th>Notes</th></tr>
+  <tr><td>1</td><td>Scheme</td><td>AMC logo + scheme name (primary). AMC name as sub-line. Click → fund detail.</td></tr>
+  <tr><td>2</td><td>Category</td><td>Pill: Large Cap / Mid Cap / Small Cap / Flexi Cap / ELSS / Index / Hybrid – Aggressive / Debt – Short Duration / Liquid / Gold ETF / etc.</td></tr>
+  <tr><td>3</td><td>Returns (1Y · 3Y · 5Y CAGR)</td><td>Three inline numbers, color-coded vs category median.</td></tr>
+  <tr><td>4</td><td>AUM</td><td>₹ Cr — fund size, credibility/liquidity signal.</td></tr>
+  <tr><td>5</td><td>Expense ratio</td><td>% — cost, major distributor talking point.</td></tr>
+  <tr><td>6</td><td>Riskometer</td><td>SEBI 6-band: Low / Low to Moderate / Moderate / Moderately High / High / Very High.</td></tr>
+  <tr><td>7</td><td>Min SIP</td><td>₹ amount (single value).</td></tr>
+  <tr><td>—</td><td>Distribution fee</td><td>Placeholder — <em>"Coming soon"</em> (parity with FD).</td></tr>
+  <tr><td>—</td><td>Action</td><td><strong>Invest</strong> button (pinned right) — opens fund detail.</td></tr>
+</table>
+
+<h4>Default sort</h4>
+<p>3Y Return (CAGR) descending.</p>
+
+<h4>Search bar</h4>
+<p>Single debounced search box at top of Explore. Searches across:</p>
+<ul>
+  <li>Scheme name (primary, fuzzy match)</li>
+  <li>AMC name</li>
+  <li>ISIN / AMFI scheme code (exact match)</li>
+</ul>
+<p>Results highlight matched substrings.</p>
+
+<h4>Filters (multi-select chips)</h4>
+<table>
+  <tr><th>#</th><th>Filter</th><th>Options</th></tr>
+  <tr><td>1</td><td>Category</td><td>Equity – Large Cap / Mid / Small / Flexi · ELSS · Hybrid · Debt – Liquid / Short / Long · Index / ETF · Gold</td></tr>
+  <tr><td>2</td><td>Risk</td><td>SEBI 6-band — Low / Low-Mod / Mod / Mod-High / High / Very High</td></tr>
+  <tr><td>3</td><td>AMC</td><td>Multi-select dropdown of all AMCs</td></tr>
+  <tr><td>4</td><td>Plan</td><td>Direct / Regular</td></tr>
+  <tr><td>5</td><td>Option</td><td>Growth / IDCW</td></tr>
+  <tr><td>6</td><td>Min SIP</td><td>Range slider (₹100 – ₹10,000+)</td></tr>
+  <tr><td>7</td><td>Returns</td><td>1Y / 3Y / 5Y CAGR threshold — choose period + min %</td></tr>
+  <tr><td>8</td><td>AUM</td><td>Range slider (₹10 Cr – ₹1L Cr+)</td></tr>
+  <tr><td>9</td><td>Expense ratio</td><td>Max % slider (0% – 2.5%)</td></tr>
+  <tr><td>10</td><td>Rating</td><td>Star threshold (3★+ / 4★+ / 5★)</td></tr>
+</table>
+<p><strong>Filter behaviour:</strong> AND across filter types, OR within multi-selects. Active filter chips visible above list with × to remove. "Clear all" link to reset.</p>
+
+<h4>Sort options</h4>
+<p>1Y / 3Y / 5Y return · AUM · Expense Ratio · Min SIP</p>
+
+<div class="note"><strong>Not on the list</strong> (goes to fund detail page): NAV history, exit load, fund manager, portfolio holdings, ISIN, min lumpsum, VR/Morningstar stars. NAV itself is useful at order time, not shortlist time.</div>
+
+<hr/>
+
+<h2>2. Orders Tab</h2>
+<div class="ok"><strong>Locked.</strong></div>
+
+<h3>Orders table — columns</h3>
+<p>App ID · Client · Scheme · Folio Number · Type · Txn type · Amount · Units · NAV + NAV date · Status · BSE Star order ID · Ordered at · Plan ID (for installments)</p>
+<table>
+  <tr><th>Column</th><th>Notes</th></tr>
+  <tr><td>App ID</td><td>YMPL application reference</td></tr>
+  <tr><td>Client</td><td>Client name + ID (avatar)</td></tr>
+  <tr><td>Scheme</td><td>Scheme name</td></tr>
+  <tr><td>Folio Number</td><td>"Pending" until allotment, populated thereafter</td></tr>
+  <tr><td>Type</td><td>Lumpsum / SIP installment / STP installment / SWP installment</td></tr>
+  <tr><td>Txn type</td><td>Purchase / Redeem / Switch</td></tr>
+  <tr><td>Amount</td><td>₹</td></tr>
+  <tr><td>Units</td><td>Allotted (or "Pending")</td></tr>
+  <tr><td>NAV + NAV date</td><td>NAV applied with as-of date</td></tr>
+  <tr><td>Status</td><td>Localised badge</td></tr>
+  <tr><td>BSE Star order ID</td><td>Exchange reference</td></tr>
+  <tr><td>Ordered at</td><td>Date of order placement</td></tr>
+  <tr><td>Plan ID</td><td>For installments only — deep-links to Systematic Plan section</td></tr>
+</table>
+
+<h3>View Detail layout</h3>
+
+<h4>Header</h4>
+<p>Application ID · Status badge · Placed at (date + time)</p>
+
+<h4>Client &amp; scheme</h4>
+<ul>
+  <li>Client name + Client ID · PAN (masked) · Folio number (or "Pending")</li>
+  <li>AMC · Scheme name · Plan (Direct/Regular) · Option (Growth/IDCW) · Category · ISIN / AMFI scheme code</li>
+</ul>
+
+<h4>Order details</h4>
+<ul>
+  <li>Transaction type · Order type · Amount · Units allotted · NAV + NAV date · Stamp duty · Net invested amount</li>
+  <li>IDCW frequency (only when Option = IDCW)</li>
+</ul>
+
+<h4>Payment</h4>
+<ul>
+  <li>Payment mode (UPI / Net Banking / Mandate debit) · Status · Bank account (masked) · Mandate UMRN (SIP installments only) · Payment reference ID · Payment received at</li>
+</ul>
+
+<h4>Exchange / RTA</h4>
+<ul>
+  <li>BSE Star order ID · RTA (CAMS / KFintech) · RTA acknowledgement ID · Allotment date</li>
+</ul>
+
+<h4>Timeline</h4>
+<p>Placed → Payment initiated → Payment received → Sent to BSE Star → RTA acknowledged → Units allotted → Statement generated. Failures show reason + Retry CTA.</p>
+
+<h4>Documents</h4>
+<table>
+  <tr><th>Document</th><th>Source</th><th>When available</th></tr>
+  <tr><td>Order confirmation email</td><td>YMPL</td><td>At order placement</td></tr>
+  <tr><td>Payment receipt</td><td>Razorpay</td><td>After payment success</td></tr>
+  <tr><td>BSE Star contract note</td><td>BSE Star API</td><td>Once order accepted</td></tr>
+  <tr><td>Allotment advice</td><td>RTA (CAMS / KFintech)</td><td>Post NAV allotment (T+1)</td></tr>
+  <tr><td>Mandate copy</td><td>Razorpay / NPCI</td><td>SIP installments only</td></tr>
+  <tr><td>SID / KIM</td><td>AMC</td><td>Static, link from detail</td></tr>
+  <tr><td>CAF</td><td>YMPL + Digio e-Sign</td><td>First-folio order only</td></tr>
+</table>
+
+<h4>Row actions</h4>
+<ul>
+  <li>Resend payment link (if pending)</li>
+  <li>Cancel order (pre-payment only)</li>
+  <li>Setup STP from this scheme (secondary entry — see section 5)</li>
+  <li>Setup SWP from this scheme (secondary entry — see section 6)</li>
+  <li>Download statement (post-allotment)</li>
+  <li>View linked plan (installments only — deep-links to Systematic Plan)</li>
+</ul>
+
+<div class="note"><strong>Tax statements and CAS</strong> are client-level, not order-level — they belong in a Reports/Portfolio surface, not here.</div>
+
+<hr/>
+
+<h2>3. Investor Profile → Portfolio Tab</h2>
+<div class="ok"><strong>Locked.</strong> Investor Profile is opened from the Client page by clicking the investor's name. The <strong>Portfolio</strong> tab inside it contains Holdings, Systematic Plans (with nested mandate debit history), and AUM summary.</div>
+
+<h3>3a. AUM summary header</h3>
+<p>Total holdings count · Total invested · Total current value · Total P&amp;L (₹ + %)</p>
+
+<h3>3b. Holdings table</h3>
+<p class="grain">Grain: one row per folio (= one scheme holding).</p>
+<table>
+  <tr><th>Column</th><th>Notes</th></tr>
+  <tr><td>Scheme</td><td>Scheme name</td></tr>
+  <tr><td>Folio number</td><td>RTA-issued</td></tr>
+  <tr><td>AMC</td><td>Asset Management Company</td></tr>
+  <tr><td>Plan / Option</td><td>Direct/Regular, Growth/IDCW</td></tr>
+  <tr><td>Category</td><td>Large Cap / Liquid / etc.</td></tr>
+  <tr><td>Units held</td><td>Cumulative units in folio</td></tr>
+  <tr><td>Average buy price</td><td>₹/unit</td></tr>
+  <tr><td>Current NAV</td><td>With as-of date</td></tr>
+  <tr><td>Current value</td><td>₹</td></tr>
+  <tr><td>Unrealized P&amp;L</td><td>₹ + %</td></tr>
+  <tr><td>Last transaction date</td><td>Most recent buy/sell/STP/SWP</td></tr>
+</table>
+
+<h4>Row actions</h4>
+<ul>
+  <li>Buy more (lumpsum into this folio)</li>
+  <li>Setup SIP (into this folio)</li>
+  <li><strong>Setup STP (from this folio — primary entry)</strong></li>
+  <li><strong>Setup SWP (from this folio — primary entry)</strong></li>
+  <li>Redeem (one-time)</li>
+  <li>View transactions (deep-links to Orders, filtered by this folio)</li>
+</ul>
+
+<h3>3c. Systematic Plan table</h3>
+<p class="grain">Parent grain: one row per plan. Replaces both the standalone Mandate tab and the standalone Systematic Plan tab.</p>
+<table>
+  <tr><th>Column</th><th>Notes</th></tr>
+  <tr><td>Plan ID</td><td>YMPL-generated reference</td></tr>
+  <tr><td>Type</td><td>SIP / STP / SWP</td></tr>
+  <tr><td>Scheme</td><td>For SIP/SWP: the scheme. For STP: source → target.</td></tr>
+  <tr><td>Amount</td><td>₹ per cycle</td></tr>
+  <tr><td>Frequency</td><td>Monthly / Quarterly</td></tr>
+  <tr><td>Next debit</td><td>Forecasted next cycle date</td></tr>
+  <tr><td>Installments</td><td>Done / Total (e.g., 4 / 36)</td></tr>
+  <tr><td>Status</td><td>Active / Paused / Stopped / Completed</td></tr>
+  <tr><td>Actions</td><td>Pause · Resume · Modify · Stop</td></tr>
+</table>
+
+<h4>Expanding any plan row reveals the Mandate Debit History for that plan</h4>
+<p class="grain">Child grain: one row per debit attempt. Table extends with every new debit attempt.</p>
+<table>
+  <tr><th>#</th><th>Column</th><th>Notes</th></tr>
+  <tr><td>1</td><td>Date</td><td>Of the debit attempt</td></tr>
+  <tr><td>2</td><td>UMRN</td><td>20-char NPCI mandate identifier</td></tr>
+  <tr><td>3</td><td>Scheme</td><td>Scheme of that debit</td></tr>
+  <tr><td>4</td><td>Linked plan</td><td>Plan ID that triggered the debit</td></tr>
+  <tr><td>5</td><td>Status</td><td>Success / Failed / Pending</td></tr>
+  <tr><td>6</td><td>Amount</td><td>₹ debited (or attempted)</td></tr>
+  <tr><td>7</td><td>Bank</td><td>Bank name</td></tr>
+  <tr><td>8</td><td>Account (masked)</td><td>e.g., XXXX1234</td></tr>
+  <tr><td>9</td><td>Max amount</td><td>Mandate cap</td></tr>
+  <tr><td>10</td><td>Frequency</td><td>Mandate frequency</td></tr>
+  <tr><td>11</td><td>Start/End</td><td>Mandate validity</td></tr>
+  <tr><td>12</td><td>Auth mode</td><td>Net banking / Debit card / Aadhaar OTP</td></tr>
+  <tr><td>13</td><td>Failure reason</td><td>Populated only when Status = Failed</td></tr>
+</table>
+
+<div class="info"><strong>Mandate notes for developers:</strong>
+  <ul>
+    <li><strong>UMRN</strong> = Unique Mandate Reference Number (NPCI-issued, 20 chars, immutable).</li>
+    <li>Mandate is a real banking instrument at NPCI — used by Razorpay/BSE Star to physically pull money on each SIP date.</li>
+    <li>Investor authorises via net banking / debit card + ATM PIN / Aadhaar OTP. Bound to a specific bank account.</li>
+    <li>Credit cards are not allowed for MF SIP debits per SEBI/AMFI rules.</li>
+    <li>One mandate can serve multiple plans within its max-amount cap.</li>
+    <li><strong>STP has no mandate</strong> (intra-RTA, no bank debit).</li>
+    <li><strong>SWP has no mandate</strong> (outflow to investor's bank, not debit from it).</li>
+  </ul>
+</div>
+
+<hr/>
+
+<h2>4. Setup STP</h2>
+<div class="ok"><strong>Locked.</strong></div>
+
+<h3>Entry points</h3>
+<table>
+  <tr><th>Priority</th><th>Entry</th><th>Notes</th></tr>
+  <tr><td>Primary</td><td>Investor Profile → Portfolio → Holdings row → "Setup STP"</td><td>Source = folio. No order-to-folio resolution.</td></tr>
+  <tr><td>Secondary (shortcut)</td><td>Orders tab → row action "Setup STP from this scheme"</td><td>Resolves the order to its folio, lands on the same setup page.</td></tr>
+</table>
+<div class="note"><strong>Do not</strong> place STP entry in Explore — Explore is for discovering new funds, not transferring out of existing holdings.</div>
+
+<h3>Setup STP page (dedicated full page)</h3>
+
+<h4>Source (locked, pre-filled)</h4>
+<p>Client · PAN (masked) · Folio · Scheme · Plan/Option · Current units · Current value · Exit load status</p>
+
+<h4>Target scheme</h4>
+<p>Searchable picker (same AMC for intra-AMC STP) · Target plan (Direct/Regular) · Target option (Growth/IDCW)</p>
+
+<h4>Transfer plan</h4>
+<ul>
+  <li>Amount per cycle (₹)</li>
+  <li>Frequency: Monthly / Quarterly</li>
+  <li>Transfer day (1–28)</li>
+  <li>Start date</li>
+  <li>End condition: End date / Number of installments / Until source exhausted</li>
+</ul>
+
+<h4>Disclosure</h4>
+<p>Acknowledgement: <em>"Each STP cycle is a redemption from source + purchase in target. Capital gains apply on the source leg per slab/LTCG rules. Exit load may apply if source units are below threshold age."</em></p>
+
+<h4>Pre-flight check (system, automatic)</h4>
+<ul>
+  <li>Validates: folio active, current value above STP minimum.</li>
+  <li>If folio has an <strong>active SIP feeding in</strong>, shows warning: <em>"This folio has an active SIP. Continuing may cause churn. Pause SIP?"</em> — distributor can pause SIP inline or proceed.</li>
+</ul>
+
+<h4>Footer actions</h4>
+<p>Cancel · Submit</p>
+
+<h3>End-to-end flow</h3>
+<ol>
+  <li>Distributor opens Investor Profile → Portfolio → Holdings.</li>
+  <li>Clicks "Setup STP" on the source folio row.</li>
+  <li>Pre-flight check runs (active-SIP warning if applicable).</li>
+  <li>Setup page opens — source pre-filled and locked.</li>
+  <li>Distributor picks target scheme, fills transfer plan, acknowledges tax disclosure.</li>
+  <li>Submits → Plan created with Status = Active.</li>
+  <li>New row in Systematic Plan table. <strong>No mandate row.</strong> <strong>No order row yet.</strong></li>
+  <li>On each cycle date: AMC executes redeem + buy → one Switch order row in Orders tab. Source folio shrinks; target folio grows.</li>
+  <li>Lifecycle: Pause / Modify / Stop from Systematic Plan section. Auto-completes when end condition met OR source exhausted.</li>
+  <li>Original buy/SIP orders untouched throughout.</li>
+</ol>
+
+<h3>Status lifecycle</h3>
+<p>Draft → Active → [Paused] → Completed / Stopped.</p>
+
+<hr/>
+
+<h2>5. Setup SWP</h2>
+<div class="ok"><strong>Locked.</strong></div>
+
+<h3>Entry points</h3>
+<table>
+  <tr><th>Priority</th><th>Entry</th><th>Notes</th></tr>
+  <tr><td>Primary</td><td>Investor Profile → Portfolio → Holdings row → "Setup SWP"</td><td>Source = folio.</td></tr>
+  <tr><td>Secondary (shortcut)</td><td>Orders tab → row action "Setup SWP from this scheme"</td><td>Resolves to folio, lands on same setup page.</td></tr>
+</table>
+
+<h3>Setup SWP page (dedicated full page)</h3>
+
+<h4>Source (locked, pre-filled)</h4>
+<p>Client · Folio · Scheme · Plan/Option · Current units · Current value · Exit load status</p>
+
+<h4>Withdrawal plan</h4>
+<ul>
+  <li>Withdrawal type: Fixed amount / Fixed units / Capital appreciation only</li>
+  <li>Amount or units (conditional on type)</li>
+  <li>Frequency: Monthly / Quarterly</li>
+  <li>Withdrawal day (1–28)</li>
+  <li>Start date</li>
+  <li>End condition: End date / Number of installments / Until source exhausted</li>
+</ul>
+
+<h4>Payout bank (locked)</h4>
+<p>Pre-filled from investor's KYC bank — name, account (masked), IFSC.</p>
+
+<h4>Disclosure</h4>
+<p>Acknowledgement: <em>"Each SWP cycle is a redemption; capital gains tax applies per slab/LTCG rules."</em></p>
+
+<h4>Footer actions</h4>
+<p>Cancel · Submit</p>
+
+<h3>End-to-end flow</h3>
+<ol>
+  <li>Distributor opens Investor Profile → Portfolio → Holdings.</li>
+  <li>Clicks "Setup SWP" on the source folio row.</li>
+  <li>Pre-flight: validates current value above SWP minimum, exit-load warning if redeeming within window.</li>
+  <li>Setup page opens — source and payout bank pre-filled and locked.</li>
+  <li>Distributor sets withdrawal type, amount/units, frequency, schedule, end condition.</li>
+  <li>Acknowledges tax disclosure → Submit.</li>
+  <li>New row in Systematic Plan table. <strong>No mandate row.</strong> <strong>No order row yet.</strong></li>
+  <li>On each cycle date: AMC redeems → proceeds credited to investor's KYC bank (T+2/T+3) → one Redeem order row in Orders tab. Source folio shrinks.</li>
+  <li>Lifecycle: Pause / Modify / Stop. Auto-completes when end condition met OR source exhausted.</li>
+</ol>
+
+<h3>Status lifecycle</h3>
+<p>Draft → Active → [Paused] → Completed / Stopped.</p>
+
+<hr/>
+
+<h2>Cross-cutting design notes</h2>
+<ul>
+  <li><strong>Naming consistency:</strong> use the exact FD tab labels (Home / Explore / Orders) — not "Dashboard", not "Funds", not "Transactions".</li>
+  <li><strong>Buy → Lumpsum:</strong> rename tab entry to <strong>Invest</strong> (same verb FD uses on the card). Keep the two-step pattern of FD (Detail → Review).</li>
+  <li><strong>Select Bank screen:</strong> not needed as a standalone screen if the investor has only one bank on record (which is the Phase 1 default). Show inline on Review. Promote to a full step only when multiple banks exist in a later phase.</li>
+  <li><strong>Configure SIP:</strong> reuses the Setup SIP screen with prefilled + editable values. "Modify" reopens the same form.</li>
+</ul>
+
+<h2>Open / handoff items</h2>
+<ul>
+  <li>Share MF prototype with Ashid (PM action — outside this document).</li>
+  <li>Feed this document into the MF PRD under "UX Structure".</li>
+  <li>Backend: extend order schema with <code>orderType</code> values (LUMPSUM / SIP_INSTALLMENT / STP_INSTALLMENT / SWP_INSTALLMENT) and <code>txnType</code> (PURCHASE / REDEEM / SWITCH); link installment orders to <code>plan_id</code>.</li>
+  <li>Backend: model Mandate (UMRN, status, max amount, auth mode, linked plans) and DebitAttempt (date, status, amount, failure reason).</li>
+  <li>Backend: model Holdings (folio, units, avg buy price, last txn date) — derived from RTA daily feeds (CAMS + KFintech).</li>
+</ul>
+
+</body>
+</html>
