@@ -2,52 +2,150 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Daily Updates</title>
+<title>Daily Updates — Komal</title>
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 900px; margin: 40px auto; padding: 0 24px; color: #172B4D; line-height: 1.6; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 1000px; margin: 40px auto; padding: 0 24px; color: #172B4D; line-height: 1.6; }
   h1 { color: #0052CC; border-bottom: 2px solid #0052CC; padding-bottom: 8px; }
-  h2 { color: #0747A6; margin-top: 28px; font-size: 18px; }
-  .entry { background: #F4F5F7; border-left: 4px solid #0052CC; padding: 14px 18px; border-radius: 3px; margin: 14px 0; }
-  .entry h3 { margin: 0 0 8px 0; font-size: 15px; color: #253858; }
-  .tag { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 11px; font-weight: 600; background: #DEEBFF; color: #0052CC; margin-right: 6px; }
+  h2 { color: #0747A6; margin-top: 32px; font-size: 20px; border-bottom: 1px solid #DFE1E6; padding-bottom: 6px; }
+  h3 { color: #253858; margin-top: 22px; font-size: 16px; }
+  .entry { background: #F4F5F7; border-left: 4px solid #0052CC; padding: 14px 20px; border-radius: 3px; margin: 14px 0; }
+  .entry-mf { border-left-color: #36B37E; }
+  .entry-kyc { border-left-color: #FF991F; }
+  .entry-fd { border-left-color: #DE350B; }
+  .entry-ops { border-left-color: #6554C0; }
+  .entry h4 { margin: 0 0 8px 0; font-size: 15px; color: #253858; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 700; margin-right: 6px; letter-spacing: 0.3px; }
   .tag-mf { background: #E3FCEF; color: #006644; }
-  .tag-fd { background: #FFEBE6; color: #BF2600; }
   .tag-kyc { background: #FFFAE6; color: #974F0C; }
+  .tag-fd { background: #FFEBE6; color: #BF2600; }
   .tag-ops { background: #EAE6FF; color: #403294; }
-  ul { margin: 6px 0; padding-left: 20px; }
-  .placeholder { color: #5E6C84; font-style: italic; }
+  .tag-repo { background: #DEEBFF; color: #0052CC; }
+  ul { margin: 6px 0; padding-left: 22px; }
+  li { margin: 3px 0; }
+  .summary { background: #DEEBFF; border-left: 4px solid #0052CC; padding: 14px 20px; border-radius: 3px; margin: 16px 0; }
+  .summary strong { color: #0052CC; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th, td { border: 1px solid #DFE1E6; padding: 8px 12px; text-align: left; vertical-align: top; font-size: 14px; }
+  th { background: #F4F5F7; font-weight: 600; }
+  tr:nth-child(even) td { background: #FAFBFC; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 12px; font-weight: 600; color: #fff; }
+  .pill-done { background: #36B37E; }
+  .pill-progress { background: #0052CC; }
+  .pill-blocked { background: #FF991F; }
+  .meta { color: #5E6C84; font-size: 13px; }
 </style>
 </head>
 <body>
 
-<h1>Daily Updates</h1>
-<p>Running log of daily PM activity. Newest at top.</p>
+<h1>Daily Updates — Komal</h1>
+<p class="meta">Running log of PM activity. Newest at top.</p>
 
-<h2>2026-05-14</h2>
-<div class="entry">
-  <h3><span class="tag tag-mf">MF</span> Phase 1 structure finalised</h3>
-  <ul>
-    <li>Locked Explore (list, 7 columns), Orders, Portfolio (Holdings + Systematic Plans + AUM inside Investor Profile).</li>
-    <li>Mandate nested under Systematic Plan as expandable debit history (one row per debit attempt).</li>
-    <li>STP/SWP setup — primary entry from Holdings, secondary from Orders.</li>
-    <li>Spec at <a href="../MF/mf-structure.html">MF/mf-structure.html</a>.</li>
-  </ul>
-</div>
-<div class="entry">
-  <h3><span class="tag">Repo</span> Yubi workspace set up</h3>
-  <ul>
-    <li>Created repo with MF, FD, Weekly-Report, Daily-Updates sections.</li>
-    <li>GitHub Pages enabled — published at <a href="https://saroyakomal.github.io/Yubi/">saroyakomal.github.io/Yubi/</a>.</li>
-  </ul>
+<!-- ================= WEEKLY SUMMARY ================= -->
+<h2>This Week — 2026-05-08 to 2026-05-14</h2>
+
+<div class="summary">
+  <strong>Headline:</strong> MF Phase 1 UX structure fully locked end-to-end (Explore, Orders, Portfolio, STP, SWP, Mandate). Investor &amp; Distributor KYC step lists drafted for unified KYC. FD engagement review delivered. Personal Yubi workspace stood up on GitHub Pages so all specs are shareable via stable URLs.
 </div>
 
-<h2>Template — copy-paste for new entry</h2>
-<div class="entry">
-  <h3><span class="tag">TAG</span> <span class="placeholder">[Title of the update]</span></h3>
+<h3>Workstream progress</h3>
+<table>
+  <tr><th>Workstream</th><th>Status</th><th>What moved this week</th></tr>
+  <tr>
+    <td>MF — Finalise structure</td>
+    <td><span class="pill pill-progress">Spec done</span></td>
+    <td>All 7 designer-flagged "Komal" points answered and locked. Handoff doc ready for design + dev.</td>
+  </tr>
+  <tr>
+    <td>Unified KYC</td>
+    <td><span class="pill pill-progress">Drafted</span></td>
+    <td>Distributor KYC additional-steps doc and Investor KYC unified-steps doc (FD + MF + Bonds) drafted. Awaiting developer.</td>
+  </tr>
+  <tr>
+    <td>FD engagement review</td>
+    <td><span class="pill pill-done">Delivered</span></td>
+    <td>fd-engagement-review.html prepared on Mon for review.</td>
+  </tr>
+  <tr>
+    <td>Workspace tooling</td>
+    <td><span class="pill pill-done">Live</span></td>
+    <td>Yubi repo set up under personal GitHub, GitHub Pages enabled — all specs now shareable via saroyakomal.github.io/Yubi/.</td>
+  </tr>
+  <tr>
+    <td>Roadmap / Jira hygiene</td>
+    <td><span class="pill pill-done">Done</span></td>
+    <td>CC-emails Jira ticket created for YMPL + FD. Roadmap pointers added to close gaps.</td>
+  </tr>
+</table>
+
+<h3>Open / next week</h3>
+<ul>
+  <li>Share MF prototype with Ashid; collect design feedback on locked structure.</li>
+  <li>Agreement — create new YMPL account &amp; map fields in Digio.</li>
+  <li>Invoice — groom open points; create Jira ticket for status-paid via ops admin; add GST % per product.</li>
+  <li>FD — close remaining bugs with Fixerra.</li>
+  <li>Amplitude — deploy event project, test on QA, build dashboard.</li>
+  <li>FDops — define ops system to update FD commission.</li>
+  <li>YMPL — Analytics tab; Reports tab QA testing.</li>
+  <li>PRD — collect distributor GST details in KYC flow.</li>
+</ul>
+
+<!-- ================= TODAY ================= -->
+<h2>Today — Thursday, 2026-05-14</h2>
+
+<div class="summary">
+  <strong>Focus:</strong> Closing out MF Phase 1 UX structure, and standing up a personal workspace to share specs cleanly with design / dev / manager.
+</div>
+
+<div class="entry entry-mf">
+  <h4><span class="tag tag-mf">MF</span> Phase 1 UX structure — locked</h4>
+  <p>All 7 designer "Komal" points addressed and finalised. Single source of truth published at <a href="../MF/mf-structure.html">MF/mf-structure.html</a>.</p>
   <ul>
-    <li class="placeholder">What happened.</li>
-    <li class="placeholder">Decision / outcome.</li>
-    <li class="placeholder">Link to spec or ticket.</li>
+    <li><strong>Phase 1 decisions:</strong> Commission out of scope · Free for investor · SIP full-edit · Redemption distributor-initiated only.</li>
+    <li><strong>Top-level navigation:</strong> Home deferred to Phase 2+ (lands directly on Explore); Explore · Orders · Portfolio locked.</li>
+    <li><strong>Explore tab:</strong> Switched from card grid to list view (parity with Groww / Zerodha Coin / Kuvera / ET Money). 7 columns: Scheme · Category · Returns (1Y/3Y/5Y) · AUM · Expense ratio · Riskometer · Min SIP. Distribution fee shown as "Coming soon" (FD parity). Search bar + 10 filters defined. Default sort: 3Y CAGR descending.</li>
+    <li><strong>Orders tab:</strong> Columns finalised — App ID · Client · Scheme · Folio Number · Type · Txn type · Amount · Units · NAV+date · Status · BSE Star order ID · Ordered at · Plan ID. View Detail spec defined (Header / Client &amp; scheme / Order table).</li>
+    <li><strong>Portfolio (inside Investor Profile):</strong> Holds Holdings table + Systematic Plans table + AUM summary. Investor profile is opened from Client page → click investor name.</li>
+    <li><strong>Holdings table:</strong> One row per folio. 11 columns including Avg buy price, Current NAV, Unrealized P&amp;L. Row actions: Buy more / Setup SIP / Setup STP / Setup SWP / Redeem / View transactions. <strong>This is the primary entry point for STP and SWP setup.</strong></li>
+    <li><strong>Systematic Plan + Mandate (unified):</strong> Single hierarchical table — parent row = plan (SIP/STP/SWP), expandable child = Mandate Debit History (one row per debit attempt, 13 columns: Date, UMRN, Scheme, Linked plan, Status, Amount, Bank, Account masked, Max amount, Frequency, Start/End, Auth mode, Failure reason). Mandate is no longer a separate tab.</li>
+    <li><strong>Setup STP:</strong> Primary entry from Holdings; secondary shortcut from Orders. Dedicated full page. Source folio locked, target scheme picker, transfer plan, tax disclosure, review &amp; submit. Status lifecycle Draft → Active → [Paused] → Completed/Stopped.</li>
+    <li><strong>Setup SWP:</strong> Primary entry from Holdings; secondary from Orders. No mandate row (outflow to investor's bank, not a debit). On execution, AMC redeems and credits investor's KYC bank T+2/T+3.</li>
+  </ul>
+</div>
+
+<div class="entry entry-repo">
+  <h4><span class="tag tag-repo">Repo</span> Personal Yubi workspace — live on GitHub Pages</h4>
+  <ul>
+    <li>Created <a href="https://github.com/saroyakomal/Yubi">github.com/saroyakomal/Yubi</a> under personal account (public).</li>
+    <li>Sections: <code>MF/</code>, <code>FD/</code>, <code>Weekly-Report/</code>, <code>Daily-Updates/</code>.</li>
+    <li>GitHub Pages enabled — all specs shareable via stable URLs at <a href="https://saroyakomal.github.io/Yubi/">saroyakomal.github.io/Yubi/</a>.</li>
+    <li>MF structure spec, weekly report template, and this daily-updates page committed and live.</li>
+  </ul>
+</div>
+
+<!-- ================= EARLIER THIS WEEK ================= -->
+<h2>Monday — 2026-05-11</h2>
+
+<div class="entry entry-kyc">
+  <h4><span class="tag tag-kyc">KYC</span> Unified KYC step lists — drafted</h4>
+  <ul>
+    <li><strong>Distributor KYC:</strong> Additional steps spec drafted for MF eligibility (on top of existing FD KYC). Doc: <code>products/distributor-kyc/distributor-kyc-steps.html</code>.</li>
+    <li><strong>Investor KYC:</strong> Unified step list drafted spanning FD + MF + Bonds eligibility in one flow. Doc: <code>products/investor-kyc/investor-kyc-steps.html</code>.</li>
+    <li>Both held pending developer feedback.</li>
+  </ul>
+</div>
+
+<div class="entry entry-fd">
+  <h4><span class="tag tag-fd">FD</span> FD engagement review — delivered</h4>
+  <ul>
+    <li>Prepared <code>fd-engagement-review.html</code> consolidating review notes for FD distributor flow.</li>
+  </ul>
+</div>
+
+<div class="entry entry-ops">
+  <h4><span class="tag tag-ops">Ops</span> Roadmap &amp; Jira hygiene</h4>
+  <ul>
+    <li>Created Jira ticket for CC emails in YMPL + FD.</li>
+    <li>Added pointers to roadmap feature list to close gaps.</li>
   </ul>
 </div>
 
