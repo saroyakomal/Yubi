@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FD + MF Engagement — Weekly Review</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0d1117;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 16px 56px;
+  }
+
+  .deck-wrap {
+    width: min(100%, 1200px);
+    aspect-ratio: 16 / 9;
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 30px 90px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.06);
+  }
+  .deck { width: 100%; height: 100%; }
+  .slide {
+    display: none;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    inset: 0;
+  }
+  .slide.active { display: flex; }
+
+  /* Cover */
+  .cover {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-align: center;
+    padding: 32px 40px;
+  }
+  .cover-eyebrow {
+    font-size: .68rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.45);
+    margin-bottom: 10px;
+  }
+  .cover h1 {
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: -.025em;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .cover-sub { font-size: .9rem; color: rgba(255,255,255,.6); margin-bottom: 20px; }
+  .cover-period {
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 100px;
+    padding: 5px 18px;
+    font-size: .76rem;
+    color: rgba(255,255,255,.75);
+    margin-bottom: 32px;
+  }
+  .cover-metrics { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .cover-metric {
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 10px;
+    padding: 14px 20px;
+    text-align: left;
+    min-width: 150px;
+  }
+  .cover-metric .cm-label {
+    font-size: .63rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: rgba(255,255,255,.4);
+    margin-bottom: 5px;
+  }
+  .cover-metric .cm-val { font-size: 1.35rem; font-weight: 700; }
+  .cover-metric .cm-wow { font-size: .68rem; margin-top: 3px; }
+  .cm-wow.up   { color: #4ade80; }
+  .cm-wow.down { color: #f87171; }
+  .cm-wow.flat { color: rgba(255,255,255,.35); }
+
+  /* Two-column */
+  .two-col { flex-direction: row; }
+  .left-panel {
+    width: 32%;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 28px 22px 24px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .left-panel::before {
+    content: '';
+    position: absolute;
+    bottom: -80px; right: -80px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.05);
+    pointer-events: none;
+  }
+  .slide-num  { font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; opacity: .45; margin-bottom: 3px; }
+  .slide-ttl  { font-size: clamp(.95rem, 1.5vw, 1.15rem); font-weight: 700; line-height: 1.25; margin-bottom: 3px; }
+  .slide-sub  { font-size: .67rem; opacity: .55; margin-bottom: 20px; }
+
+  .hero-num {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -.03em;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+  .hero-lbl { font-size: .62rem; text-transform: uppercase; letter-spacing: .08em; opacity: .55; margin-bottom: 8px; }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: .72rem;
+    font-weight: 600;
+    border-radius: 100px;
+    padding: 3px 10px;
+    margin-bottom: 20px;
+  }
+  .hero-badge.up   { background: rgba(74,222,128,.22); color: #4ade80; }
+  .hero-badge.down { background: rgba(248,113,113,.22); color: #f87171; }
+  .hero-badge.flat { background: rgba(255,255,255,.1);  color: rgba(255,255,255,.55); }
+
+  .stat-list { display: flex; flex-direction: column; gap: 0; margin-top: auto; }
+  .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 9px 0;
+    border-top: 1px solid rgba(255,255,255,.1);
+  }
+  .si-lbl { font-size: .62rem; text-transform: uppercase; letter-spacing: .07em; opacity: .5; }
+  .si-val { font-size: .88rem; font-weight: 700; }
+
+  .right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    padding: 20px 24px 14px;
+  }
+  .right-panel h2 {
+    font-size: .9rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 2px;
+  }
+  .right-panel .rp-sub {
+    font-size: .66rem;
+    color: #94a3b8;
+    margin-bottom: 10px;
+  }
+  .chart-area { flex: 1; position: relative; min-height: 0; }
+  .insight-row {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .ins-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: .67rem;
+    color: #64748b;
+  }
+  .ins-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Nav */
+  .nav-bar {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .nav-btn {
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.18);
+    color: #fff;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: .95rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,.2); }
+  .nav-btn:disabled { opacity: .25; cursor: default; }
+  .dots { display: flex; gap: 6px; align-items: center; }
+  .dot-btn {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(255,255,255,.28);
+    border: none; cursor: pointer; padding: 0;
+    transition: all .15s;
+  }
+  .dot-btn.active { background: #fff; transform: scale(1.35); }
+
+  .note-banner {
+    position: absolute; top: 8px; right: 12px;
+    font-size: .6rem;
+    color: rgba(255,255,255,.35);
+  }
+
+  /* MF slide helpers */
+  .takeaway-box { margin-top: 8px; background: rgba(255,255,255,.13); border-radius: 7px; padding: 8px 10px; font-size: .58rem; line-height: 1.55; color: rgba(255,255,255,.92); }
+  .tw-title { font-size: .47rem; text-transform: uppercase; letter-spacing: .12em; opacity: .5; margin-bottom: 5px; font-weight: 700; }
+  .tw-row { display: flex; gap: 5px; margin-bottom: 3px; align-items: flex-start; }
+  .tw-row:last-child { margin-bottom: 0; }
+  .tw-dot { flex-shrink: 0; width: 4px; height: 4px; background: rgba(255,255,255,.65); border-radius: 50%; margin-top: .42em; }
+  .insight-box { margin-top: 8px; padding: 7px 10px 8px; border-top: 2px solid #d1fae5; background: #f0fdf4; border-radius: 0 0 5px 5px; }
+  .ib-title { font-size: .5rem; text-transform: uppercase; letter-spacing: .1em; color: #047857; font-weight: 700; margin-bottom: 5px; }
+  .ib-body { display: flex; flex-direction: column; gap: 4px; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .deck-wrap { box-shadow: none; border-radius: 0; }
+    .nav-bar { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deck-wrap">
+<div class="deck" id="deck">
+
+  <!-- Cover -->
+  <div class="slide cover active" id="s0">
+    <div class="cover-eyebrow">Yubi Wealth · BtoBtoC</div>
+    <h1>FD Engagement<br>Weekly Review</h1>
+    <div class="cover-sub">Distributor · Investor · Orders</div>
+    <div class="cover-period">Week ending May 17, 2026 &nbsp;·&nbsp; 8-week trailing view (from Mar 23)</div>
+    <div class="cover-metrics">
+      <div class="cover-metric">
+        <div class="cm-label">Onboarded Distributors</div>
+        <div class="cm-val">6</div>
+        <div class="cm-wow down">▼ -40% vs prior wk</div>
+      </div>
+      <div class="cover-metric">
+        <div class="cm-label">Onboarded Investors</div>
+        <div class="cm-val">0</div>
+        <div class="cm-wow flat">no May data in source</div>
+      </div>
+      <div class="cover-metric">
+        <div class="cm-label">Total Orders</div>
+        <div class="cm-val">0</div>
+        <div class="cm-wow flat">no May data in source</div>
+      </div>
+      <div class="cover-metric">
+        <div class="cm-label">FD Booked</div>
+        <div class="cm-val">0</div>
+        <div class="cm-wow flat">no May data in source</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 1: Weekly Onboarded Distributors — Sky Blue -->
+  <div class="slide two-col" id="s1">
+    <div class="left-panel" style="background:linear-gradient(160deg,#1d4ed8,#3b82f6);">
+      <div class="slide-num">Slide 01</div>
+      <div class="slide-ttl">Weekly Onboarded Distributors</div>
+      <div class="slide-sub">Count of onboarded distributors per week</div>
+      <div class="hero-num">6</div>
+      <div class="hero-lbl">Last week onboarded</div>
+      <div class="hero-badge down">▼ -40% vs prior wk</div>
+      <div class="stat-list">
+        <div class="stat-item"><span class="si-lbl">Prior Week</span><span class="si-val">10</span></div>
+        <div class="stat-item"><span class="si-lbl">Peak (8-wk)</span><span class="si-val">11</span></div>
+        <div class="stat-item"><span class="si-lbl">8-Wk Average</span><span class="si-val">7.0</span></div>
+      </div>
+    </div>
+    <div class="right-panel">
+      <h2>Count of Onboarded Distributors</h2>
+      <div class="rp-sub">vs. start date of the week</div>
+      <div class="chart-area"><canvas id="chart-dist"></canvas></div>
+      <div class="insight-row">
+        <span class="ins-chip"><span class="ins-dot" style="background:#3b82f6"></span>Rebound after Mar-30 trough</span>
+        <span class="ins-chip"><span class="ins-dot" style="background:#10b981"></span>Peak 11 on Apr-13</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2: Active vs Pending Distributors — Violet -->
+  <div class="slide two-col" id="s2">
+    <div class="left-panel" style="background:linear-gradient(160deg,#5b21b6,#8b5cf6);">
+      <div class="slide-num">Slide 02</div>
+      <div class="slide-ttl">Onboarded vs Onboarding-Pending Distributors</div>
+      <div class="slide-sub">Onboarded vs onboarding-pending</div>
+      <div class="hero-num">60%</div>
+      <div class="hero-lbl">Onboarded share (last wk)</div>
+      <div class="hero-badge flat">6 onboarded · 4 pending</div>
+      <div class="stat-list">
+        <div class="stat-item"><span class="si-lbl">Onboarded (last wk)</span><span class="si-val">6</span></div>
+        <div class="stat-item"><span class="si-lbl">Pending (last wk)</span><span class="si-val">4</span></div>
+        <div class="stat-item"><span class="si-lbl">Peak Pending</span><span class="si-val">4</span></div>
+      </div>
+    </div>
+    <div class="right-panel">
+      <h2>Onboarded vs Onboarding-Pending Distributors</h2>
+      <div class="rp-sub">weekly · onboarded (blue) vs onboarding-pending (red)</div>
+      <div class="chart-area"><canvas id="chart-distpending"></canvas></div>
+      <div class="insight-row">
+        <span class="ins-chip"><span class="ins-dot" style="background:#3b82f6"></span>Onboarded distributors</span>
+        <span class="ins-chip"><span class="ins-dot" style="background:#ef4444"></span>Onboarding-pending</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3: Weekly Onboarded Investors — Emerald -->
+  <div class="slide two-col" id="s3">
+    <div class="left-panel" style="background:linear-gradient(160deg,#065f46,#10b981);">
+      <div class="slide-num">Slide 03</div>
+      <div class="slide-ttl">Weekly Onboarded Investors</div>
+      <div class="slide-sub">New onboarded distinct clients added per week</div>
+      <div class="hero-num">0</div>
+      <div class="hero-lbl">Last week onboarded</div>
+      <div class="hero-badge down">▼ from 6 (Apr-13 peak)</div>
+      <div class="stat-list">
+        <div class="stat-item"><span class="si-lbl">Peak (8-wk)</span><span class="si-val">6</span></div>
+        <div class="stat-item"><span class="si-lbl">Second peak</span><span class="si-val">5</span></div>
+        <div class="stat-item"><span class="si-lbl">8-Wk Average</span><span class="si-val">1.75</span></div>
+      </div>
+    </div>
+    <div class="right-panel">
+      <h2>Client Onboarding Per Week</h2>
+      <div class="rp-sub">count of new onboarded distinct clients</div>
+      <div class="chart-area"><canvas id="chart-inv"></canvas></div>
+      <div class="insight-row">
+        <span class="ins-chip"><span class="ins-dot" style="background:#10b981"></span>Peak of 6 on Apr-13</span>
+        <span class="ins-chip"><span class="ins-dot" style="background:#f59e0b"></span>Trailing weeks trending to 0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4: Onboarded vs Pending Investors — Teal -->
+  <div class="slide two-col" id="s4">
+    <div class="left-panel" style="background:linear-gradient(160deg,#134e4a,#14b8a6);">
+      <div class="slide-num">Slide 04</div>
+      <div class="slide-ttl">Onboarded Investors vs Onboarding-Pending</div>
+      <div class="slide-sub">New onboarded vs pending by onboarding week</div>
+      <div class="hero-num">0</div>
+      <div class="hero-lbl">New onboarded last wk</div>
+      <div class="hero-badge flat">0 onboarded · 4 pending</div>
+      <div class="stat-list">
+        <div class="stat-item"><span class="si-lbl">Peak Onboarded</span><span class="si-val">6</span></div>
+        <div class="stat-item"><span class="si-lbl">Peak Pending</span><span class="si-val">4</span></div>
+        <div class="stat-item"><span class="si-lbl">Pending : Onboarded</span><span class="si-val">~5 : 7</span></div>
+      </div>
+    </div>
+    <div class="right-panel">
+      <h2>Weekly Onboarded Investors vs Onboarding-Pending</h2>
+      <div class="rp-sub">onboarded clients (blue) vs onboarding-pending (red)</div>
+      <div class="chart-area"><canvas id="chart-invpending"></canvas></div>
+      <div class="insight-row">
+        <span class="ins-chip"><span class="ins-dot" style="background:#3b82f6"></span>New onboarded clients</span>
+        <span class="ins-chip"><span class="ins-dot" style="background:#ef4444"></span>Onboarding-pending</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5: Total Orders vs FD Booked — Rose -->
+  <div class="slide two-col" id="s5">
+    <div class="left-panel" style="background:linear-gradient(160deg,#881337,#ec4899);">
+      <div class="slide-num">Slide 05</div>
+      <div class="slide-ttl">Total Orders vs FD Booked</div>
+      <div class="slide-sub">Order volume vs confirmed FD bookings</div>
+      <div class="hero-num">0</div>
+      <div class="hero-lbl">Orders last week</div>
+      <div class="hero-badge flat">no May data in source</div>
+      <div class="stat-list">
+        <div class="stat-item"><span class="si-lbl">FD Booked (last wk)</span><span class="si-val">0</span></div>
+        <div class="stat-item"><span class="si-lbl">Order→Book Rate (8-wk)</span><span class="si-val">~9%</span></div>
+        <div class="stat-item"><span class="si-lbl">Peak Orders</span><span class="si-val">14</span></div>
+      </div>
+    </div>
+    <div class="right-panel">
+      <h2>Total Orders vs FD Booked</h2>
+      <div class="rp-sub">weekly · by created_at</div>
+      <div class="chart-area"><canvas id="chart-orders"></canvas></div>
+      <div class="insight-row">
+        <span class="ins-chip"><span class="ins-dot" style="background:#3b82f6"></span>Total orders</span>
+        <span class="ins-chip"><span class="ins-dot" style="background:#ef4444"></span>FD booked</span>
+        <span class="ins-chip"><span class="ins-dot" style="background:#f59e0b"></span>Large gap = booking friction</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ MF SECTION ══ -->
+  <!-- Slide MF-0 · Section Divider Cover -->
+  <div class="slide cover" id="mf-s0" style="background:linear-gradient(135deg,#0c4a6e 0%,#0e7490 55%,#06b6d4 100%);">
+    <div class="cover-eyebrow">Yubi Wealth B2B · IFA Segment</div>
+    <h1>Mutual Fund<br>Activity</h1>
+    <div class="cover-sub">IFA-Sourced Purchases · Apr – May 2026</div>
+    <div class="cover-period">Apr – May 2026 · IFA Channel Only</div>
+    <div class="cover-metrics" id="mf-cov-metrics"></div>
+    <div id="mf-cov-note" style="margin-top:16px;font-size:.55rem;color:rgba(255,255,255,.6);line-height:1.6;max-width:520px;text-align:center;"></div>
+  </div>
+
+  <!-- Slide MF-1 · Weekly Activity -->
+  <div class="slide two-col" id="mf-s1">
+    <div class="left-panel" style="background:#0e7490;">
+      <div class="slide-num">MF · Slide 01</div>
+      <div class="slide-ttl">Weekly Investment Activity</div>
+      <div class="slide-sub">IFA-sourced MF purchases · 8-week view</div>
+      <div class="hero-lbl">Last week investment</div>
+      <div class="hero-num" id="mf-s1-lw-amt">—</div>
+      <div class="stat-list">
+        <div class="stat-item"><span class="si-lbl">Prior week</span><span class="si-val" id="mf-s1-pw-amt">—</span></div>
+        <div class="stat-item"><span class="si-lbl">LW transactions</span><span class="si-val" id="mf-s1-lw-txns">—</span></div>
+        <div class="stat-item"><span class="si-lbl">Prior week txns</span><span class="si-val" id="mf-s1-pw-txns">—</span></div>
+        <div class="stat-item"><span class="si-lbl">LW unique clients</span><span class="si-val" id="mf-s1-lw-cli">—</span></div>
+        <div class="stat-item"><span class="si-lbl">Prior week clients</span><span class="si-val" id="mf-s1-pw-cli">—</span></div>
+        <div class="stat-item"><span class="si-lbl">8-week total</span><span class="si-val" id="mf-s1-total">—</span></div>
+      </div>
+      <div class="takeaway-box" id="tw-mf-s1"></div>
+    </div>
+    <div class="right-panel" style="flex-direction:column;padding:14px 16px 10px;gap:6px;">
+      <div style="font-size:.53rem;font-weight:600;color:#374151;letter-spacing:.05em;">WEEKLY INVESTMENT (₹L) · SIP vs LUMPSUM</div>
+      <div class="chart-area"><canvas id="chart-mf-s1"></canvas></div>
+      <div class="insight-box"><div class="ib-title">Key Insights</div><div class="ib-body" id="ins-mf-s1"></div></div>
+    </div>
+  </div>
+
+  <!-- Slide MF-2 · Category & Fund Breakdown -->
+  <div class="slide two-col" id="mf-s2">
+    <div class="left-panel" style="background:#0c4a6e;">
+      <div class="slide-num">MF · Slide 02</div>
+      <div class="slide-ttl">Category &amp; Fund Mix</div>
+      <div class="slide-sub">Where IFAs are investing · by value</div>
+      <div class="hero-lbl">SIF share of total value</div>
+      <div class="hero-num" id="mf-s2-sif-pct">—</div>
+      <div class="stat-list" id="mf-s2-cat-list"></div>
+      <div class="takeaway-box" id="tw-mf-s2"></div>
+    </div>
+    <div class="right-panel" style="flex-direction:column;padding:14px 16px 10px;gap:0;">
+      <div style="font-size:.53rem;font-weight:600;color:#374151;letter-spacing:.05em;flex-shrink:0;">TOP FUNDS BY INVESTMENT VALUE (₹L)</div>
+      <div style="flex:0 0 50%;position:relative;min-height:0;margin-top:4px;"><canvas id="chart-mf-s2"></canvas></div>
+      <div style="font-size:.49rem;font-weight:600;color:#64748b;letter-spacing:.05em;margin-top:6px;flex-shrink:0;">ALL CATEGORIES · DETAIL</div>
+      <div style="flex:1;overflow:auto;min-height:0;">
+        <table style="font-size:.63rem;width:100%;border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:4px 6px;color:#6b7280;font-weight:600;border-bottom:1px solid #e2e8f0;">Category</th>
+              <th style="text-align:right;padding:4px 6px;color:#6b7280;font-weight:600;border-bottom:1px solid #e2e8f0;">Txns</th>
+              <th style="text-align:right;padding:4px 6px;color:#6b7280;font-weight:600;border-bottom:1px solid #e2e8f0;">Amount (₹L)</th>
+              <th style="text-align:right;padding:4px 6px;color:#6b7280;font-weight:600;border-bottom:1px solid #e2e8f0;">Share</th>
+            </tr>
+          </thead>
+          <tbody id="mf-cat-tbody"></tbody>
+        </table>
+      </div>
+      <div class="insight-box" style="flex-shrink:0;margin-top:4px;"><div class="ib-title">Key Insights</div><div class="ib-body" id="ins-mf-s2"></div></div>
+    </div>
+  </div>
+
+  <!-- Slide MF-3 · Top IFA Partners -->
+  <div class="slide two-col" id="mf-s3">
+    <div class="left-panel" style="background:#0e7490;">
+      <div class="slide-num">MF · Slide 03</div>
+      <div class="slide-ttl">Top IFA Partners · MF</div>
+      <div class="slide-sub">By total investment value · Apr–May 2026</div>
+      <div class="hero-lbl">Top IFA partner investment</div>
+      <div class="hero-num" id="mf-s3-top-amt">—</div>
+      <div class="stat-list">
+        <div class="stat-item"><span class="si-lbl">Top IFA partner</span><span class="si-val" id="mf-s3-top-name">—</span></div>
+        <div class="stat-item"><span class="si-lbl">Most active (txns)</span><span class="si-val" id="mf-s3-active-name">—</span></div>
+        <div class="stat-item"><span class="si-lbl">Most clients served</span><span class="si-val" id="mf-s3-cli-name">—</span></div>
+        <div class="stat-item"><span class="si-lbl">SIF partners (≥₹10L)</span><span class="si-val" id="mf-s3-sif-count">—</span></div>
+        <div class="stat-item"><span class="si-lbl">Consistent SIP partners</span><span class="si-val" id="mf-s3-sip-only">—</span></div>
+      </div>
+      <div class="takeaway-box" id="tw-mf-s3"></div>
+    </div>
+    <div class="right-panel" style="flex-direction:column;padding:12px 16px 8px;gap:0;">
+      <div style="font-size:.53rem;font-weight:600;color:#374151;letter-spacing:.05em;flex-shrink:0;">TOP 10 IFA PARTNERS · INVESTMENT VALUE (₹L) · ⊕ = SIF</div>
+      <div style="flex:0 0 46%;position:relative;min-height:0;margin-top:4px;"><canvas id="chart-mf-s3"></canvas></div>
+      <div style="font-size:.49rem;font-weight:600;color:#64748b;letter-spacing:.05em;margin-top:5px;flex-shrink:0;">PARTNER DETAIL TABLE</div>
+      <div style="flex:1;overflow:auto;min-height:0;">
+        <table style="font-size:.63rem;width:100%;border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:3px 5px;color:#6b7280;font-weight:600;border-bottom:1px solid #e2e8f0;">#</th>
+              <th style="text-align:left;padding:3px 5px;color:#6b7280;font-weight:600;border-bottom:1px solid #e2e8f0;">Partner</th>
+              <th style="text-align:right;padding:3px 5px;color:#6b7280;font-weight:600;border-bottom:1px solid #e2e8f0;">₹L</th>
+              <th style="text-align:right;padding:3px 5px;color:#6b7280;font-weight:600;border-bottom:1px solid #e2e8f0;">Txns</th>
+              <th style="text-align:right;padding:3px 5px;color:#6b7280;font-weight:600;border-bottom:1px solid #e2e8f0;">Clients</th>
+              <th style="text-align:right;padding:3px 5px;color:#6b7280;font-weight:600;border-bottom:1px solid #e2e8f0;">Active Wks</th>
+            </tr>
+          </thead>
+          <tbody id="mf-partner-tbody"></tbody>
+        </table>
+      </div>
+      <div class="insight-box" style="flex-shrink:0;margin-top:3px;"><div class="ib-title">Key Insights</div><div class="ib-body" id="ins-mf-s3"></div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="note-banner">FD: distributor data through May 11 · investor & order data through Apr 20 &nbsp; · &nbsp; MF: IFA-sourced, Apr – May 2026 (source: ifa-top10-deepdive)</div>
+</div>
+
+<div class="nav-bar">
+  <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>&#8592;</button>
+  <div class="dots" id="dots"></div>
+  <button class="nav-btn" id="btn-next" onclick="navigate(1)">&#8594;</button>
+</div>
+
+<script>
+// Navigation
+let current = 0;
+const slides = document.querySelectorAll('.slide');
+const total  = slides.length;
+const dotsEl = document.getElementById('dots');
+slides.forEach((_, i) => {
+  const b = document.createElement('button');
+  b.className = 'dot-btn' + (i === 0 ? ' active' : '');
+  b.onclick = () => { current = i; showSlide(i); };
+  dotsEl.appendChild(b);
+});
+function showSlide(i) {
+  slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+  document.querySelectorAll('.dot-btn').forEach((d, idx) => d.classList.toggle('active', idx === i));
+  document.getElementById('btn-prev').disabled = i === 0;
+  document.getElementById('btn-next').disabled = i === total - 1;
+  current = i;
+}
+function navigate(d) {
+  const n = current + d;
+  if (n >= 0 && n < total) showSlide(n);
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') navigate(1);
+  else if (e.key === 'ArrowLeft') navigate(-1);
+});
+
+// Chart defaults
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#64748b';
+const gridColor = '#f1f5f9';
+
+const labels6 = ['Mar 23','Mar 30','Apr 06','Apr 13','Apr 20','Apr 27','May 04','May 11'];
+
+function barOpts(maxY) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+      y: { beginAtZero: true, suggestedMax: maxY, grid: { color: gridColor }, ticks: { stepSize: 2 } }
+    }
+  };
+}
+
+// Slide 1: Distributors single bar
+new Chart(document.getElementById('chart-dist'), {
+  type: 'bar',
+  data: {
+    labels: labels6,
+    datasets: [{
+      data: [6, 1, 8, 11, 5, 9, 10, 6],
+      backgroundColor: '#3b82f6',
+      borderRadius: 4,
+      borderSkipped: false
+    }]
+  },
+  options: barOpts(12)
+});
+
+// Slide 2: Active vs Pending distributors (grouped bar)
+new Chart(document.getElementById('chart-distpending'), {
+  type: 'bar',
+  data: {
+    labels: labels6,
+    datasets: [
+      { label: 'Onboarded', data: [6, 1, 8, 11, 5, 9, 10, 6], backgroundColor: '#3b82f6', borderRadius: 4, borderSkipped: false },
+      { label: 'Pending',   data: [0, 0, 0,  3, 2, 2,  0, 4], backgroundColor: '#ef4444', borderRadius: 4, borderSkipped: false }
+    ]
+  },
+  options: barOpts(12)
+});
+
+// Slide 3: Investors single bar
+new Chart(document.getElementById('chart-inv'), {
+  type: 'bar',
+  data: {
+    labels: labels6,
+    datasets: [{
+      data: [1, 1, 5, 6, 1, 0, 0, 0],
+      backgroundColor: '#10b981',
+      borderRadius: 4,
+      borderSkipped: false
+    }]
+  },
+  options: barOpts(8)
+});
+
+// Slide 4: Investors active vs pending (grouped bar)
+new Chart(document.getElementById('chart-invpending'), {
+  type: 'bar',
+  data: {
+    labels: labels6,
+    datasets: [
+      { label: 'New Onboarded', data: [1, 1, 5, 6, 1, 0, 0, 0], backgroundColor: '#3b82f6', borderRadius: 4, borderSkipped: false },
+      { label: 'Pending',       data: [2, 0, 2, 0, 2, 0, 0, 4], backgroundColor: '#ef4444', borderRadius: 4, borderSkipped: false }
+    ]
+  },
+  options: barOpts(8)
+});
+
+// Slide 5: Orders vs FD Booked (grouped bar)
+new Chart(document.getElementById('chart-orders'), {
+  type: 'bar',
+  data: {
+    labels: labels6,
+    datasets: [
+      { label: 'Total Orders', data: [5, 1, 1, 14, 12, 0, 0, 0], backgroundColor: '#3b82f6', borderRadius: 4, borderSkipped: false },
+      { label: 'FD Booked',    data: [0, 0, 0,  1,  2, 0, 0, 0], backgroundColor: '#ef4444', borderRadius: 4, borderSkipped: false }
+    ]
+  },
+  options: barOpts(16)
+});
+
+// ══════════════════════════════════════════════════════════════ MF SLIDES ══
+const MF_WEEK_LABELS = ["Mar 23–29","Mar 30–Apr 5","Apr 6–12","Apr 13–19","Apr 20–26","Apr 27–May 3","May 4–10","May 11–17"];
+const MF = {"total_amt_l":83.36,"total_txns":64,"unique_partners":16,"unique_clients":28,"sip_txns":47,"lump_txns":17,"sip_amt_l":1.67,"lump_amt_l":81.69,"lw_txns":5,"lw_amt_l":7.23,"lw_clients":2,"pw_txns":21,"pw_amt_l":42.78,"pw_clients":14,"weekly_txns":[0,3,12,7,11,5,21,5],"weekly_amt_l":[0.0,0.10,10.32,0.25,20.40,2.27,42.78,7.23],"weekly_clients":[0,1,9,6,4,3,14,2],"weekly_sip":[0,3,11,4,9,4,15,1],"weekly_lump":[0,0,1,3,2,1,6,4],"categories":[{"name":"SIF Equity","txns":5,"amount_l":50.00,"pct":60.0},{"name":"SIF Hybrid","txns":2,"amount_l":20.00,"pct":24.0},{"name":"Equity","txns":46,"amount_l":8.85,"pct":10.6},{"name":"Other","txns":3,"amount_l":4.10,"pct":4.9},{"name":"Hybrid","txns":7,"amount_l":0.21,"pct":0.2},{"name":"Gold","txns":1,"amount_l":0.20,"pct":0.2}],"top_funds":[{"name":"WSIF MF","amount_l":40.00,"txns":4},{"name":"ICICI Pru SIF","amount_l":10.00,"txns":1},{"name":"TITANIUM SIF","amount_l":10.00,"txns":1},{"name":"Quant SIF","amount_l":10.00,"txns":1},{"name":"Groww MF","amount_l":4.10,"txns":3},{"name":"PPFAS MF","amount_l":3.09,"txns":4},{"name":"WhiteOak Capital","amount_l":3.03,"txns":2},{"name":"Bandhan MF","amount_l":1.07,"txns":4},{"name":"Nippon India MF","amount_l":0.47,"txns":10},{"name":"Quant MF","amount_l":0.38,"txns":1}],"top_partners":[{"name":"SANJEEV KUMAR GOYAL","short":"S. K. Goyal","amount_l":40.00,"txns":4,"clients":4,"active_weeks":1,"sif":true},{"name":"BESTOW FINMART","short":"Bestow Finmart","amount_l":10.00,"txns":1,"clients":1,"active_weeks":1,"sif":true},{"name":"RISHAB GARG","short":"Rishab Garg","amount_l":10.00,"txns":1,"clients":1,"active_weeks":1,"sif":true},{"name":"SANAM MUKHIJA","short":"Sanam Mukhija","amount_l":10.00,"txns":1,"clients":1,"active_weeks":1,"sif":true},{"name":"MAHESH SADASHIV RANE","short":"M. S. Rane","amount_l":7.00,"txns":3,"clients":1,"active_weeks":1,"sif":false},{"name":"GULSHAN KALRA","short":"Gulshan Kalra","amount_l":4.40,"txns":7,"clients":1,"active_weeks":4,"sif":false},{"name":"VRIKSHAM FINANCIAL SOLUTIONS","short":"Vriksham FS","amount_l":0.46,"txns":16,"clients":7,"active_weeks":3,"sif":false},{"name":"NAVEEN KUMAR REDDY VADULA","short":"N. K. R. Vadula","amount_l":0.43,"txns":9,"clients":3,"active_weeks":3,"sif":false},{"name":"SANJAY SHIVKUMAR VERMA","short":"S. S. Verma","amount_l":0.39,"txns":2,"clients":2,"active_weeks":2,"sif":false},{"name":"SHRUTI SAHNI","short":"Shruti Sahni","amount_l":0.26,"txns":3,"clients":1,"active_weeks":2,"sif":false}]};
+const MF_TEAL = '#14b8a6', MF_AMBER = '#f59e0b', MF_CYAN = '#22d3ee';
+
+function setEl(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+function insights(id,arr){const el=document.getElementById(id);if(!el)return;el.innerHTML=arr.map(({color,txt})=>`<span class="ins-chip"><span class="ins-dot" style="background:${color}"></span>${txt}</span>`).join('')}
+function takeaways(id,items){const el=document.getElementById(id);if(!el)return;el.innerHTML='<div class="tw-title">Key Takeaways</div>'+items.map(t=>`<div class="tw-row"><span class="tw-dot"></span><span>${t}</span></div>`).join('')}
+
+// MF Cover
+(function(){
+  const sifAmt = MF.categories.filter(c => c.name.includes('SIF')).reduce((s,c) => s+c.amount_l, 0);
+  const sifPct = Math.round(sifAmt / MF.total_amt_l * 100);
+  document.getElementById('mf-cov-metrics').innerHTML = [
+    {lbl:'Total Investment', val:'₹'+MF.total_amt_l+'L'},
+    {lbl:'Transactions',     val:MF.total_txns},
+    {lbl:'IFA Partners',     val:MF.unique_partners},
+    {lbl:'Unique Clients',   val:MF.unique_clients},
+    {lbl:'SIP Installments', val:MF.sip_txns},
+    {lbl:'SIF by Value',     val:sifPct+'%'},
+  ].map(m=>`<div class="cover-metric"><div class="cm-label">${m.lbl}</div><div class="cm-val">${m.val}</div></div>`).join('');
+  setEl('mf-cov-note', 'MF data covers Apr – May 2026 only (first MF transactions via IFA channel). Source: ifa-top10-deepdive.');
+})();
+
+// MF Slide 1 – Weekly Activity
+(function(){
+  const lw = MF.lw_amt_l, pw = MF.pw_amt_l;
+  const del = +(lw - pw).toFixed(2);
+  const sign = del >= 0 ? '+' : '';
+  setEl('mf-s1-lw-amt', '₹' + lw + 'L');
+  setEl('mf-s1-pw-amt', '₹' + pw + 'L');
+  setEl('mf-s1-lw-txns', MF.lw_txns);
+  setEl('mf-s1-pw-txns', MF.pw_txns);
+  setEl('mf-s1-lw-cli', MF.lw_clients);
+  setEl('mf-s1-pw-cli', MF.pw_clients);
+  setEl('mf-s1-total', '₹' + MF.total_amt_l + 'L');
+
+  takeaways('tw-mf-s1', [
+    'May 4–10 was peak week: ₹' + MF.weekly_amt_l[6] + 'L across ' + MF.weekly_txns[6] + ' transactions',
+    'Last week (May 11–17): ₹' + lw + 'L — ' + sign + '₹' + Math.abs(del) + 'L vs prior week',
+    MF.sip_txns + ' SIPs (₹' + MF.sip_amt_l + 'L) vs ' + MF.lump_txns + ' lumpsum (₹' + MF.lump_amt_l + 'L) — lumpsums dominate by value',
+  ]);
+  insights('ins-mf-s1', [
+    {color: '#f59e0b', txt: 'Lumpsum purchases account for ₹' + MF.lump_amt_l + 'L (' + Math.round(MF.lump_amt_l/MF.total_amt_l*100) + '%) of total — SIF one-time investments drove the May 4–10 spike.'},
+    {color: '#22d3ee', txt: 'SIP count (' + MF.sip_txns + ' installments, ₹' + MF.sip_amt_l + 'L) shows steady recurring activity from ' + MF.unique_partners + ' IFA partners.'},
+  ]);
+
+  new Chart(document.getElementById('chart-mf-s1'), {
+    type: 'bar',
+    data: {
+      labels: MF_WEEK_LABELS,
+      datasets: [
+        {label: 'Lumpsum (₹L)', data: MF.weekly_amt_l.map((tot, i) => {
+          if (!tot) return 0;
+          const sipAvgL = MF.sip_amt_l / (MF.sip_txns || 1);
+          const sipEst = +(MF.weekly_sip[i] * sipAvgL).toFixed(2);
+          return Math.max(0, +(tot - sipEst).toFixed(2));
+        }), backgroundColor: MF_AMBER+'cc', borderColor: MF_AMBER, borderWidth: 1, borderRadius: 3, stack: 's'},
+        {label: 'SIP (₹L)', data: MF.weekly_amt_l.map((tot, i) => {
+          if (!tot) return 0;
+          const sipAvgL = MF.sip_amt_l / (MF.sip_txns || 1);
+          return Math.min(tot, +(MF.weekly_sip[i] * sipAvgL).toFixed(2));
+        }), backgroundColor: MF_TEAL+'cc', borderColor: MF_TEAL, borderWidth: 1, borderRadius: 3, stack: 's'},
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {legend: {labels: {font: {size: 9}}},
+        tooltip: {callbacks: {label: ctx => ctx.dataset.label + ': ₹' + ctx.parsed.y + 'L'}}},
+      scales: {
+        x: {ticks: {font: {size: 8}, maxRotation: 30}, grid: {color: '#f0fdf4'}},
+        y: {stacked: true, beginAtZero: true, ticks: {font: {size: 8}, callback: v => v>0?'₹'+v+'L':''}, grid: {color: '#f0fdf4'}}
+      }
+    }
+  });
+})();
+
+// MF Slide 2 – Category & Fund Breakdown
+(function(){
+  const sifAmt = MF.categories.filter(c => c.name.includes('SIF')).reduce((s,c) => s + c.amount_l, 0);
+  const sifPct = Math.round(sifAmt / MF.total_amt_l * 100);
+  setEl('mf-s2-sif-pct', sifPct + '%');
+
+  const catColors = {'SIF Equity': '#22d3ee', 'SIF Hybrid': '#a78bfa', 'Equity': '#f59e0b', 'Other': '#4ade80', 'Hybrid': '#f87171', 'Gold': '#fbbf24'};
+  const catListEl = document.getElementById('mf-s2-cat-list');
+  catListEl.innerHTML = MF.categories.map(c =>
+    '<div class="stat-item"><span class="si-lbl" style="color:' + (catColors[c.name]||'#e2e8f0') + ';">' + c.name + '</span>' +
+    '<span class="si-val">₹' + c.amount_l + 'L <span style="color:#64748b;font-size:.6em;">(' + c.pct + '%)</span></span></div>'
+  ).join('');
+
+  const tbody = document.getElementById('mf-cat-tbody');
+  tbody.innerHTML = MF.categories.map(c => '<tr>' +
+    '<td style="padding:4px 6px;color:' + (catColors[c.name]||'#374151') + ';">' + c.name + '</td>' +
+    '<td style="text-align:right;padding:4px 6px;color:#6b7280;">' + c.txns + '</td>' +
+    '<td style="text-align:right;padding:4px 6px;color:#374151;font-weight:600;">₹' + c.amount_l + '</td>' +
+    '<td style="text-align:right;padding:4px 6px;"><div style="display:flex;align-items:center;gap:4px;justify-content:flex-end;">' +
+    '<div style="width:40px;height:4px;background:#e2e8f0;border-radius:2px;overflow:hidden;"><div style="width:' + c.pct + '%;height:100%;background:' + (catColors[c.name]||'#94a3b8') + ';border-radius:2px;"></div></div>' +
+    '<span style="font-size:.6rem;color:#6b7280;">' + c.pct + '%</span></div></td>' +
+  '</tr>').join('');
+
+  const topN = MF.top_funds.slice(0, 8);
+  const fundBg = topN.map(f => (f.name.includes('SIF') || f.name.includes('WSIF')) ? 'rgba(34,211,238,.8)' : 'rgba(245,158,11,.75)');
+  new Chart(document.getElementById('chart-mf-s2'), {
+    type: 'bar',
+    data: {labels: topN.map(f => f.name), datasets: [{label: 'Investment (₹L)', data: topN.map(f => f.amount_l), backgroundColor: fundBg, borderRadius: 4, borderSkipped: false}]},
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: {legend: {display: false}, tooltip: {callbacks: {label: ctx => '₹' + ctx.parsed.x + 'L · ' + topN[ctx.dataIndex].txns + ' txns'}}},
+      scales: {
+        x: {ticks: {font: {size: 8}, callback: v => '₹' + v + 'L'}, grid: {color: '#f0fdf4'}},
+        y: {ticks: {font: {size: 8}}, grid: {display: false}}
+      }
+    }
+  });
+
+  takeaways('tw-mf-s2', [
+    'SIF products: ₹' + sifAmt.toFixed(0) + 'L (' + sifPct + '%) — Specialized Investment Funds with ₹10L minimum',
+    'Regular equity MF: ₹' + MF.categories.find(c => c.name === 'Equity').amount_l + 'L across ' + MF.categories.find(c => c.name === 'Equity').txns + ' SIP/lumpsum transactions',
+    'WSIF MF alone: ₹40L — 4 lumpsum SIF purchases by single partner S. K. Goyal',
+  ]);
+  insights('ins-mf-s2', [
+    {color: '#22d3ee', txt: 'SIF (Specialized Investment Funds) account for ' + sifPct + '% of IFA MF value — driven by high-ticket lumpsum placements (₹10L minimum per investment).'},
+    {color: '#f59e0b', txt: 'Regular equity MF activity (46 txns, mostly SIPs) reflects consistent retail-level IFA engagement — separate from the SIF ticket buyers.'},
+  ]);
+})();
+
+// MF Slide 3 – Top IFA Partners
+(function(){
+  const p = MF.top_partners;
+  const topP = p[0];
+  const mostActive = p.reduce((a, b) => b.txns > a.txns ? b : a);
+  const mostCli = p.reduce((a, b) => b.clients > a.clients ? b : a);
+  const sifCount = p.filter(x => x.sif).length;
+  const multiWk = p.filter(x => !x.sif && x.active_weeks >= 2);
+
+  setEl('mf-s3-top-amt', '₹' + topP.amount_l + 'L');
+  setEl('mf-s3-top-name', topP.short);
+  setEl('mf-s3-active-name', mostActive.short + ' (' + mostActive.txns + ' txns)');
+  setEl('mf-s3-cli-name', mostCli.short + ' (' + mostCli.clients + ' clients)');
+  setEl('mf-s3-sif-count', sifCount);
+  setEl('mf-s3-sip-only', multiWk.length + ' partners (≥2 wks)');
+
+  new Chart(document.getElementById('chart-mf-s3'), {
+    type: 'bar',
+    data: {
+      labels: p.map(x => x.short + (x.sif ? ' ⊕' : '')),
+      datasets: [{label: 'Investment (₹L)', data: p.map(x => x.amount_l),
+        backgroundColor: p.map(x => x.sif ? 'rgba(34,211,238,.8)' : 'rgba(74,222,128,.75)'),
+        borderRadius: 4, borderSkipped: false}]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: {legend: {display: false}, tooltip: {callbacks: {label: ctx => '₹' + ctx.parsed.x + 'L · ' + p[ctx.dataIndex].txns + ' txns · ' + p[ctx.dataIndex].clients + ' clients · ' + p[ctx.dataIndex].active_weeks + '/8 active wks'}}},
+      scales: {
+        x: {ticks: {font: {size: 8}, callback: v => '₹' + v + 'L'}, grid: {color: '#f0fdf4'}},
+        y: {ticks: {font: {size: 8}}, grid: {display: false}}
+      }
+    }
+  });
+
+  const tbody = document.getElementById('mf-partner-tbody');
+  tbody.innerHTML = p.map((x, i) => '<tr style="border-bottom:1px solid #e2e8f0;">' +
+    '<td style="padding:3px 5px;color:#6b7280;">' + (i+1) + '</td>' +
+    '<td style="padding:3px 5px;color:' + (x.sif ? '#0891b2' : '#374151') + ';">' + x.short + (x.sif ? ' <span style="color:#f59e0b;font-size:.55em;font-weight:700;">SIF</span>' : '') + '</td>' +
+    '<td style="text-align:right;padding:3px 5px;font-weight:600;color:#374151;">₹' + x.amount_l + '</td>' +
+    '<td style="text-align:right;padding:3px 5px;color:#6b7280;">' + x.txns + '</td>' +
+    '<td style="text-align:right;padding:3px 5px;color:#6b7280;">' + x.clients + '</td>' +
+    '<td style="text-align:right;padding:3px 5px;color:#6b7280;">' + x.active_weeks + '/8</td>' +
+  '</tr>').join('');
+
+  takeaways('tw-mf-s3', [
+    'Top 4 partners are SIF buyers: ' + p.filter(x => x.sif).map(x => x.short).join(', '),
+    'Vriksham Financial Solutions — most clients (7 clients, 16 SIP txns over 3 weeks)',
+    multiWk.length + ' non-SIF IFAs active for 2+ weeks — consistent SIP pipeline',
+  ]);
+  insights('ins-mf-s3', [
+    {color: '#22d3ee', txt: 'Top 4 IFA partners placed SIF lumpsum investments (≥₹10L each). S. K. Goyal alone: ₹40L. SIF activity is concentrated and episodic.'},
+    {color: '#4ade80', txt: 'Non-SIF IFAs (Gulshan Kalra, Vriksham FS, Naveen Reddy) show multi-week SIP patterns. Vriksham leads client reach at 7 clients across 3 active weeks.'},
+  ]);
+})();
+</script>
+</body>
+</html>
