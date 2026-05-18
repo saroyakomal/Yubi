@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FD Engagement Metrics — Weekly Review</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0d1117;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 16px 56px;
+  }
+
+  .deck-wrap {
+    width: min(100%, 1200px);
+    aspect-ratio: 16 / 9;
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 30px 90px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.06);
+  }
+  .deck { width: 100%; height: 100%; }
+  .slide {
+    display: none;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    inset: 0;
+  }
+  .slide.active { display: flex; }
+
+  /* Cover */
+  .cover {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-align: center;
+    padding: 32px 40px;
+  }
+  .cover-eyebrow {
+    font-size: .68rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.45);
+    margin-bottom: 10px;
+  }
+  .cover h1 {
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: -.025em;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .cover-sub { font-size: .9rem; color: rgba(255,255,255,.6); margin-bottom: 20px; }
+  .cover-period {
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 100px;
+    padding: 5px 18px;
+    font-size: .76rem;
+    color: rgba(255,255,255,.75);
+    margin-bottom: 32px;
+  }
+  .cover-metrics { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .cover-metric {
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 10px;
+    padding: 14px 20px;
+    text-align: left;
+    min-width: 150px;
+  }
+  .cover-metric .cm-label {
+    font-size: .63rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: rgba(255,255,255,.4);
+    margin-bottom: 5px;
+  }
+  .cover-metric .cm-val { font-size: 1.35rem; font-weight: 700; }
+  .cover-metric .cm-wow { font-size: .68rem; margin-top: 3px; }
+  .cm-wow.up   { color: #4ade80; }
+  .cm-wow.down { color: #f87171; }
+  .cm-wow.flat { color: rgba(255,255,255,.35); }
+
+  /* Two-column */
+  .two-col { flex-direction: row; }
+  .left-panel {
+    width: 32%;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 28px 22px 24px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .left-panel::before {
+    content: '';
+    position: absolute;
+    bottom: -80px; right: -80px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.05);
+    pointer-events: none;
+  }
+  .slide-num  { font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; opacity: .45; margin-bottom: 3px; }
+  .slide-ttl  { font-size: clamp(.95rem, 1.5vw, 1.15rem); font-weight: 700; line-height: 1.25; margin-bottom: 3px; }
+  .slide-sub  { font-size: .67rem; opacity: .55; margin-bottom: 20px; }
+
+  .hero-num {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -.03em;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+  .hero-lbl { font-size: .62rem; text-transform: uppercase; letter-spacing: .08em; opacity: .55; margin-bottom: 8px; }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: .72rem;
+    font-weight: 600;
+    border-radius: 100px;
+    padding: 3px 10px;
+    margin-bottom: 20px;
+  }
+  .hero-badge.up   { background: rgba(74,222,128,.22); color: #4ade80; }
+  .hero-badge.down { background: rgba(248,113,113,.22); color: #f87171; }
+  .hero-badge.flat { background: rgba(255,255,255,.1);  color: rgba(255,255,255,.55); }
+
+  .stat-list { display: flex; flex-direction: column; gap: 0; margin-top: auto; }
+  .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 9px 0;
+    border-top: 1px solid rgba(255,255,255,.1);
+  }
+  .si-lbl { font-size: .62rem; text-transform: uppercase; letter-spacing: .07em; opacity: .5; }
+  .si-val { font-size: .88rem; font-weight: 700; }
+
+  .right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    padding: 20px 24px 14px;
+  }
+  .right-panel h2 {
+    font-size: .9rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 2px;
+  }
+  .right-panel .rp-sub {
+    font-size: .66rem;
+    color: #94a3b8;
+    margin-bottom: 10px;
+  }
+  .chart-area { flex: 1; position: relative; min-height: 0; }
+  .insight-row {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .ins-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: .67rem;
+    color: #64748b;
+  }
+  .ins-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Nav */
+  .nav-bar {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .nav-btn {
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.18);
+    color: #fff;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: .95rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,.2); }
+  .nav-btn:disabled { opacity: .25; cursor: default; }
+  .dots { display: flex; gap: 6px; align-items: center; }
+  .dot-btn {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(255,255,255,.28);
+    border: none; cursor: pointer; padding: 0;
+    transition: all .15s;
+  }
+  .dot-btn.active { background: #fff; transform: scale(1.35); }
+
+  .note-banner {
+    position: absolute; top: 8px; right: 12px;
+    font-size: .6rem;
+    color: rgba(255,255,255,.35);
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .deck-wrap { box-shadow: none; border-radius: 0; }
+    .nav-bar { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deck-wrap">
+<div class="deck" id="deck">
+
+  <!-- Cover -->
+  <div class="slide cover active" id="s0">
+    <div class="cover-eyebrow">Yubi Wealth · BtoBtoC</div>
+    <h1>FD Engagement<br>Weekly Review</h1>
+    <div class="cover-sub">Distributor · Investor · Orders</div>
+    <div class="cover-period">Week ending May 17, 2026 &nbsp;·&nbsp; 8-week trailing view (from Mar 23)</div>
+    <div class="cover-metrics">
+      <div class="cover-metric">
+        <div class="cm-label">Onboarded Distributors</div>
+        <div class="cm-val">6</div>
+        <div class="cm-wow down">▼ -40% vs prior wk</div>
+      </div>
+      <div class="cover-metric">
+        <div class="cm-label">Onboarded Investors</div>
+        <div class="cm-val">0</div>
+        <div class="cm-wow flat">no May data in source</div>
+      </div>
+      <div class="cover-metric">
+        <div class="cm-label">Total Orders</div>
+        <div class="cm-val">0</div>
+        <div class="cm-wow flat">no May data in source</div>
+      </div>
+      <div class="cover-metric">
+        <div class="cm-label">FD Booked</div>
+        <div class="cm-val">0</div>
+        <div class="cm-wow flat">no May data in source</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 1: Weekly Onboarded Distributors — Sky Blue -->
+  <div class="slide two-col" id="s1">
+    <div class="left-panel" style="background:linear-gradient(160deg,#1d4ed8,#3b82f6);">
+      <div class="slide-num">Slide 01</div>
+      <div class="slide-ttl">Weekly Onboarded Distributors</div>
+      <div class="slide-sub">Count of onboarded distributors per week</div>
+      <div class="hero-num">6</div>
+      <div class="hero-lbl">Last week onboarded</div>
+      <div class="hero-badge down">▼ -40% vs prior wk</div>
+      <div class="stat-list">
+        <div class="stat-item"><span class="si-lbl">Prior Week</span><span class="si-val">10</span></div>
+        <div class="stat-item"><span class="si-lbl">Peak (8-wk)</span><span class="si-val">11</span></div>
+        <div class="stat-item"><span class="si-lbl">8-Wk Average</span><span class="si-val">7.0</span></div>
+      </div>
+    </div>
+    <div class="right-panel">
+      <h2>Count of Onboarded Distributors</h2>
+      <div class="rp-sub">vs. start date of the week</div>
+      <div class="chart-area"><canvas id="chart-dist"></canvas></div>
+      <div class="insight-row">
+        <span class="ins-chip"><span class="ins-dot" style="background:#3b82f6"></span>Rebound after Mar-30 trough</span>
+        <span class="ins-chip"><span class="ins-dot" style="background:#10b981"></span>Peak 11 on Apr-13</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2: Active vs Pending Distributors — Violet -->
+  <div class="slide two-col" id="s2">
+    <div class="left-panel" style="background:linear-gradient(160deg,#5b21b6,#8b5cf6);">
+      <div class="slide-num">Slide 02</div>
+      <div class="slide-ttl">Onboarded vs Onboarding-Pending Distributors</div>
+      <div class="slide-sub">Onboarded vs onboarding-pending</div>
+      <div class="hero-num">60%</div>
+      <div class="hero-lbl">Onboarded share (last wk)</div>
+      <div class="hero-badge flat">6 onboarded · 4 pending</div>
+      <div class="stat-list">
+        <div class="stat-item"><span class="si-lbl">Onboarded (last wk)</span><span class="si-val">6</span></div>
+        <div class="stat-item"><span class="si-lbl">Pending (last wk)</span><span class="si-val">4</span></div>
+        <div class="stat-item"><span class="si-lbl">Peak Pending</span><span class="si-val">4</span></div>
+      </div>
+    </div>
+    <div class="right-panel">
+      <h2>Onboarded vs Onboarding-Pending Distributors</h2>
+      <div class="rp-sub">weekly · onboarded (blue) vs onboarding-pending (red)</div>
+      <div class="chart-area"><canvas id="chart-distpending"></canvas></div>
+      <div class="insight-row">
+        <span class="ins-chip"><span class="ins-dot" style="background:#3b82f6"></span>Onboarded distributors</span>
+        <span class="ins-chip"><span class="ins-dot" style="background:#ef4444"></span>Onboarding-pending</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3: Weekly Onboarded Investors — Emerald -->
+  <div class="slide two-col" id="s3">
+    <div class="left-panel" style="background:linear-gradient(160deg,#065f46,#10b981);">
+      <div class="slide-num">Slide 03</div>
+      <div class="slide-ttl">Weekly Onboarded Investors</div>
+      <div class="slide-sub">New onboarded distinct clients added per week</div>
+      <div class="hero-num">0</div>
+      <div class="hero-lbl">Last week onboarded</div>
+      <div class="hero-badge down">▼ from 6 (Apr-13 peak)</div>
+      <div class="stat-list">
+        <div class="stat-item"><span class="si-lbl">Peak (8-wk)</span><span class="si-val">6</span></div>
+        <div class="stat-item"><span class="si-lbl">Second peak</span><span class="si-val">5</span></div>
+        <div class="stat-item"><span class="si-lbl">8-Wk Average</span><span class="si-val">1.75</span></div>
+      </div>
+    </div>
+    <div class="right-panel">
+      <h2>Client Onboarding Per Week</h2>
+      <div class="rp-sub">count of new onboarded distinct clients</div>
+      <div class="chart-area"><canvas id="chart-inv"></canvas></div>
+      <div class="insight-row">
+        <span class="ins-chip"><span class="ins-dot" style="background:#10b981"></span>Peak of 6 on Apr-13</span>
+        <span class="ins-chip"><span class="ins-dot" style="background:#f59e0b"></span>Trailing weeks trending to 0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4: Onboarded vs Pending Investors — Teal -->
+  <div class="slide two-col" id="s4">
+    <div class="left-panel" style="background:linear-gradient(160deg,#134e4a,#14b8a6);">
+      <div class="slide-num">Slide 04</div>
+      <div class="slide-ttl">Onboarded Investors vs Onboarding-Pending</div>
+      <div class="slide-sub">New onboarded vs pending by onboarding week</div>
+      <div class="hero-num">0</div>
+      <div class="hero-lbl">New onboarded last wk</div>
+      <div class="hero-badge flat">0 onboarded · 4 pending</div>
+      <div class="stat-list">
+        <div class="stat-item"><span class="si-lbl">Peak Onboarded</span><span class="si-val">6</span></div>
+        <div class="stat-item"><span class="si-lbl">Peak Pending</span><span class="si-val">4</span></div>
+        <div class="stat-item"><span class="si-lbl">Pending : Onboarded</span><span class="si-val">~5 : 7</span></div>
+      </div>
+    </div>
+    <div class="right-panel">
+      <h2>Weekly Onboarded Investors vs Onboarding-Pending</h2>
+      <div class="rp-sub">onboarded clients (blue) vs onboarding-pending (red)</div>
+      <div class="chart-area"><canvas id="chart-invpending"></canvas></div>
+      <div class="insight-row">
+        <span class="ins-chip"><span class="ins-dot" style="background:#3b82f6"></span>New onboarded clients</span>
+        <span class="ins-chip"><span class="ins-dot" style="background:#ef4444"></span>Onboarding-pending</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5: Total Orders vs FD Booked — Rose -->
+  <div class="slide two-col" id="s5">
+    <div class="left-panel" style="background:linear-gradient(160deg,#881337,#ec4899);">
+      <div class="slide-num">Slide 05</div>
+      <div class="slide-ttl">Total Orders vs FD Booked</div>
+      <div class="slide-sub">Order volume vs confirmed FD bookings</div>
+      <div class="hero-num">0</div>
+      <div class="hero-lbl">Orders last week</div>
+      <div class="hero-badge flat">no May data in source</div>
+      <div class="stat-list">
+        <div class="stat-item"><span class="si-lbl">FD Booked (last wk)</span><span class="si-val">0</span></div>
+        <div class="stat-item"><span class="si-lbl">Order→Book Rate (8-wk)</span><span class="si-val">~9%</span></div>
+        <div class="stat-item"><span class="si-lbl">Peak Orders</span><span class="si-val">14</span></div>
+      </div>
+    </div>
+    <div class="right-panel">
+      <h2>Total Orders vs FD Booked</h2>
+      <div class="rp-sub">weekly · by created_at</div>
+      <div class="chart-area"><canvas id="chart-orders"></canvas></div>
+      <div class="insight-row">
+        <span class="ins-chip"><span class="ins-dot" style="background:#3b82f6"></span>Total orders</span>
+        <span class="ins-chip"><span class="ins-dot" style="background:#ef4444"></span>FD booked</span>
+        <span class="ins-chip"><span class="ins-dot" style="background:#f59e0b"></span>Large gap = booking friction</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="note-banner">Distributor data through May 11 (sheet snapshot) · Investor & order data through Apr 20</div>
+</div>
+
+<div class="nav-bar">
+  <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>&#8592;</button>
+  <div class="dots" id="dots"></div>
+  <button class="nav-btn" id="btn-next" onclick="navigate(1)">&#8594;</button>
+</div>
+
+<script>
+// Navigation
+let current = 0;
+const slides = document.querySelectorAll('.slide');
+const total  = slides.length;
+const dotsEl = document.getElementById('dots');
+slides.forEach((_, i) => {
+  const b = document.createElement('button');
+  b.className = 'dot-btn' + (i === 0 ? ' active' : '');
+  b.onclick = () => { current = i; showSlide(i); };
+  dotsEl.appendChild(b);
+});
+function showSlide(i) {
+  slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+  document.querySelectorAll('.dot-btn').forEach((d, idx) => d.classList.toggle('active', idx === i));
+  document.getElementById('btn-prev').disabled = i === 0;
+  document.getElementById('btn-next').disabled = i === total - 1;
+  current = i;
+}
+function navigate(d) {
+  const n = current + d;
+  if (n >= 0 && n < total) showSlide(n);
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') navigate(1);
+  else if (e.key === 'ArrowLeft') navigate(-1);
+});
+
+// Chart defaults
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#64748b';
+const gridColor = '#f1f5f9';
+
+const labels6 = ['Mar 23','Mar 30','Apr 06','Apr 13','Apr 20','Apr 27','May 04','May 11'];
+
+function lineOpts(maxY) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { font: { size: 10 } } },
+      y: { beginAtZero: true, suggestedMax: maxY, grid: { color: gridColor }, ticks: { stepSize: 2 } }
+    },
+    elements: {
+      line: { tension: 0.3, borderWidth: 2.5 },
+      point: { radius: 3.5, hoverRadius: 5, borderWidth: 2, backgroundColor: '#fff' }
+    }
+  };
+}
+
+// Slide 1: Distributors single line
+new Chart(document.getElementById('chart-dist'), {
+  type: 'line',
+  data: {
+    labels: labels6,
+    datasets: [{
+      data: [6, 1, 8, 11, 5, 9, 10, 6],
+      borderColor: '#3b82f6',
+      pointBorderColor: '#3b82f6'
+    }]
+  },
+  options: lineOpts(12)
+});
+
+// Slide 2: Active vs Pending distributors
+new Chart(document.getElementById('chart-distpending'), {
+  type: 'line',
+  data: {
+    labels: labels6,
+    datasets: [
+      { label: 'Onboarded', data: [6, 1, 8, 11, 5, 9, 10, 6], borderColor: '#3b82f6', pointBorderColor: '#3b82f6' },
+      { label: 'Pending',   data: [0, 0, 0,  3, 2, 2,  0, 4], borderColor: '#ef4444', pointBorderColor: '#ef4444' }
+    ]
+  },
+  options: lineOpts(12)
+});
+
+// Slide 3: Investors single line
+new Chart(document.getElementById('chart-inv'), {
+  type: 'line',
+  data: {
+    labels: labels6,
+    datasets: [{
+      data: [1, 1, 5, 6, 1, 0, 0, 0],
+      borderColor: '#10b981',
+      pointBorderColor: '#10b981'
+    }]
+  },
+  options: lineOpts(8)
+});
+
+// Slide 4: Investors active vs pending
+new Chart(document.getElementById('chart-invpending'), {
+  type: 'line',
+  data: {
+    labels: labels6,
+    datasets: [
+      { label: 'New Onboarded', data: [1, 1, 5, 6, 1, 0, 0, 0], borderColor: '#3b82f6', pointBorderColor: '#3b82f6' },
+      { label: 'Pending',       data: [2, 0, 2, 0, 2, 0, 0, 4], borderColor: '#ef4444', pointBorderColor: '#ef4444' }
+    ]
+  },
+  options: lineOpts(8)
+});
+
+// Slide 5: Orders vs FD Booked
+new Chart(document.getElementById('chart-orders'), {
+  type: 'line',
+  data: {
+    labels: labels6,
+    datasets: [
+      { label: 'Total Orders', data: [5, 1, 1, 14, 12, 0, 0, 0], borderColor: '#3b82f6', pointBorderColor: '#3b82f6' },
+      { label: 'FD Booked',    data: [0, 0, 0,  1,  2, 0, 0, 0], borderColor: '#ef4444', pointBorderColor: '#ef4444' }
+    ]
+  },
+  options: lineOpts(16)
+});
+</script>
+</body>
+</html>
